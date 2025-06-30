@@ -123,7 +123,7 @@ def juego_reaction_timer(screen, clock):
         b = get_button()
 
         if state == 'WAIT_START':
-            screen.blit(font.render("Press Z to start", True, (255,255,255)), (80,140))
+            screen.blit(font.render("Press A to start", True, (255,255,255)), (80,140))
             if b == 'A':
                 wait_delay = random.uniform(1.0, 3.0)
                 start_time = time.time()
@@ -147,7 +147,7 @@ def juego_reaction_timer(screen, clock):
 
         elif state == 'PENALIZE':
             msg1 = "¡Demasiado pronto!"
-            msg2 = "Z=reintentar   X=salir"
+            msg2 = "Reintentar A"
             screen.blit(font.render(msg1, True, (255,50,50)), (100,120))
             screen.blit(font.render(msg2, True, (255,255,255)), (80,180))
             if b == 'A':
@@ -159,7 +159,7 @@ def juego_reaction_timer(screen, clock):
             screen.blit(font.render(f"Tu tiempo: {int(reaction)} ms", True, (255,255,0)), (50,120))
             best = highs['reaction_timer'] or 0
             screen.blit(font.render(f"Mejor: {int(best)} ms", True, (255,200,200)), (50,180))
-            screen.blit(font.render("Z=reintentar   X=salir", True, (255,255,255)), (80,240))
+            screen.blit(font.render("Reintentar A", True, (255,255,255)), (80,240))
             if b == 'A':
                 state = 'WAIT_START'
             elif b == 'MENU':
@@ -179,7 +179,7 @@ def juego_button_masher(screen, clock):
         b = get_button()
 
         if state == 'WAIT_START':
-            screen.blit(font.render("Press Z to begin", True, (255,255,255)), (100,140))
+            screen.blit(font.render("Press A to begin", True, (255,255,255)), (100,140))
             if b == 'A':
                 count = 0
                 start_time = time.time()
@@ -200,7 +200,7 @@ def juego_button_masher(screen, clock):
 
         elif state == 'SHOW_RESULT':
             screen.blit(font.render(f"Mejor: {highs['button_masher']}", True, (255,200,200)), (120,120))
-            screen.blit(font.render("Z=reintentar   X=salir", True, (255,255,255)), (100,180))
+            screen.blit(font.render("Reintentar A", True, (255,255,255)), (100,180))
             if b == 'A':
                 state = 'WAIT_START'
             elif b == 'MENU':
@@ -211,7 +211,7 @@ def juego_button_masher(screen, clock):
 def main():
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption("Repositorio de Mini-Juegos")
+    pygame.display.set_caption("PiGamer: Mini-Juegos")
     clock = pygame.time.Clock()
     font = pygame.font.Font(None, 36)
 
@@ -228,7 +228,7 @@ def main():
         for idx, (label, _) in enumerate(juegos):
             color = (255,255,0) if idx == selected else (255,255,255)
             screen.blit(font.render(label, True, color), (50, 80 + idx*50))
-        screen.blit(font.render("Z=Play  X=Salir", True, (200,200,200)), (140, 260))
+        screen.blit(font.render("Seleccionar A     Salir con Menu", True, (200,200,200)), (140, 260))
         pygame.display.flip()
 
         b = get_button()
