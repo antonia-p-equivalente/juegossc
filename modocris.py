@@ -162,7 +162,7 @@ def juego_reaction_timer(screen, clock):
             surf.blit(font.render(f"Tiempo: {int(reaction)} ms", True, (255,255,0)), (80,120))
             best = highs['reaction_timer'] or 0
             surf.blit(font.render(f"Mejor: {int(best)} ms", True, (255,200,200)), (80,180))
-            surf.blit(font.render("A: Reintentar  X: Salir", True, (255,255,255)), (80,240))
+            surf.blit(font.render("A: Reintentar ", True, (255,255,255)), (80,240))
             if b == 'A':
                 state = 'WAIT_START'
             elif b == 'MENU':
@@ -205,7 +205,7 @@ def juego_button_masher(screen, clock):
 
         elif state == 'SHOW_RESULT':
             surf.blit(font.render(f"Mejor: {highs['button_masher']}", True, (255,200,200)), (120,120))
-            surf.blit(font.render("A: Reintentar  X: Salir", True, (255,255,255)), (100,180))
+            surf.blit(font.render("A: Reintentar ", True, (255,255,255)), (100,180))
             if b == 'A':
                 state = 'WAIT_START'
             elif b == 'MENU':
