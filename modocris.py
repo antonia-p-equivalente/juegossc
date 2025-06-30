@@ -59,7 +59,7 @@ def juego_bola_rebotona(screen, clock):
     vx, vy = 6.0, 4.0     # velocidad inicial duplicada
     SPEEDUP = 1.05
 
-    paddle_w, paddle_h, paddle_s = 80, 10, 10  # velocidad de pala duplicada
+    paddle_w, paddle_h, paddle_s = 80, 10, 20  # velocidad de pala duplicada
     paddle_x = (SCREEN_WIDTH - paddle_w) / 2
     paddle_y = SCREEN_HEIGHT - paddle_h - 10
 
@@ -228,7 +228,7 @@ def main():
         for idx, (label, _) in enumerate(juegos):
             color = (255,255,0) if idx == selected else (255,255,255)
             screen.blit(font.render(label, True, color), (50, 80 + idx*50))
-        screen.blit(font.render("Seleccionar A     Salir con Menu", True, (200,200,200)), (140, 260))
+        screen.blit(font.render("Seleccionar A  Salir con Menu", True, (200,200,200)), (140, 260))
         pygame.display.flip()
 
         b = get_button()
