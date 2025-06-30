@@ -56,7 +56,7 @@ def get_button():
 def juego_bola_rebotona(screen, clock):
     ball_r = 10
     x, y = SCREEN_WIDTH/2, SCREEN_HEIGHT/2
-    vx, vy = 3.0, 2.0
+    vx, vy = 6.0, 4.0     # velocidad inicial duplicada
     SPEEDUP = 1.05
 
     paddle_w, paddle_h, paddle_s = 80, 10, 5
@@ -70,7 +70,7 @@ def juego_bola_rebotona(screen, clock):
         clock.tick(FPS)
         b = get_button()
         keys = pygame.key.get_pressed()
-        # Mover pala
+        # Mover pala continuamente
         if b == 'LEFT' or keys[pygame.K_LEFT]:
             paddle_x = max(0, paddle_x - paddle_s)
         if b == 'RIGHT' or keys[pygame.K_RIGHT]:
@@ -81,28 +81,19 @@ def juego_bola_rebotona(screen, clock):
         # Mover bola
         x += vx; y += vy
 
-        # Rebote en paredes verticales
+        # Rebotes en paredes
         if x - ball_r <= 0:
-            x = ball_r
-            vx = abs(vx) * SPEEDUP
-            vy *= SPEEDUP
+            x, vx, vy = ball_r, abs(vx)*SPEEDUP, vy*SPEEDUP
         elif x + ball_r >= SCREEN_WIDTH:
-            x = SCREEN_WIDTH - ball_r
-            vx = -abs(vx) * SPEEDUP
-            vy *= SPEEDUP
-
-        # Rebote en techo
+            x, vx, vy = SCREEN_WIDTH-ball_r, -abs(vx)*SPEEDUP, vy*SPEEDUP
         if y - ball_r <= 0:
-            y = ball_r
-            vy = abs(vy) * SPEEDUP
-            vx *= SPEEDUP
+            y, vy, vx = ball_r, abs(vy)*SPEEDUP, vx*SPEEDUP
 
         # Rebote con pala o perder
         if y + ball_r >= paddle_y:
             if paddle_x <= x <= paddle_x + paddle_w:
                 y = paddle_y - ball_r
-                vy = -abs(vy) * SPEEDUP
-                vx *= SPEEDUP
+                vy, vx = -abs(vy)*SPEEDUP, vx*SPEEDUP
                 bounce_count += 1
             else:
                 if bounce_count > highs['bola_rebotona']:
@@ -141,9 +132,7 @@ def juego_reaction_timer(screen, clock):
         elif state == 'WAIT_GO':
             elapsed = time.time() - start_time
             if b == 'A' and elapsed < wait_delay:
-                # penalización: tiempo alto fijo
-                reaction = 3000
-                state = 'SHOW_RESULT'
+                state = 'PENALIZE'
             elif elapsed < wait_delay:
                 screen.blit(font.render("Get Ready...", True, (200,200,200)), (120,140))
             else:
@@ -155,6 +144,14 @@ def juego_reaction_timer(screen, clock):
                         highs['reaction_timer'] = reaction
                         save_highscores()
                     state = 'SHOW_RESULT'
+
+        elif state == 'PENALIZE':
+            msg = "Muy antes! Z=reintentar  X=salir"
+            screen.blit(font.render(msg, True, (255,0,0)), (40,140))
+            if b == 'A':
+                state = 'WAIT_START'
+            elif b == 'MENU':
+                return
 
         elif state == 'SHOW_RESULT':
             screen.blit(font.render(f"Tu tiempo: {int(reaction)} ms", True, (255,255,0)), (50,120))
@@ -171,8 +168,7 @@ def juego_reaction_timer(screen, clock):
 def juego_button_masher(screen, clock):
     font = pygame.font.Font(None, 48)
     state = 'WAIT_START'
-    count = 0
-    start_time = 0
+    count = start_time = 0
     DURATION = 5.0
 
     while True:
