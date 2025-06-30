@@ -36,18 +36,15 @@ def get_button():
     Retorna uno de: 'UP','DOWN','LEFT','RIGHT','A','MENU' o None,
     ya sea de GPIO o de teclado (flechas + Z/X).
     """
-    # GPIO
     gpio = leer_boton()
     if gpio:
         b = gpio.strip().upper()
         if b in ('UP','DOWN','LEFT','RIGHT','A','MENU'):
             return b
-    # Teclado
     for ev in pygame.event.get():
         if ev.type == QUIT:
-            pygame.quit()
-            sys.exit()
-        if ev.type == KEYDOWN:
+            pygame.quit(); sys.exit()
+        elif ev.type == KEYDOWN:
             if ev.key == pygame.K_UP:    return 'UP'
             if ev.key == pygame.K_DOWN:  return 'DOWN'
             if ev.key == pygame.K_LEFT:  return 'LEFT'
@@ -60,20 +57,20 @@ def juego_bola_rebotona(screen, clock):
     ball_r = 10
     x, y = SCREEN_WIDTH/2, SCREEN_HEIGHT/2
     vx, vy = 3.0, 2.0
+    SPEEDUP = 1.05
 
     paddle_w, paddle_h, paddle_s = 80, 10, 5
     paddle_x = (SCREEN_WIDTH - paddle_w) / 2
     paddle_y = SCREEN_HEIGHT - paddle_h - 10
 
     bounce_count = 0
-
     font = pygame.font.Font(None, 24)
 
     while True:
         clock.tick(FPS)
         b = get_button()
-        # movimiento continuo de pala con teclado
         keys = pygame.key.get_pressed()
+        # Mover pala
         if b == 'LEFT' or keys[pygame.K_LEFT]:
             paddle_x = max(0, paddle_x - paddle_s)
         if b == 'RIGHT' or keys[pygame.K_RIGHT]:
@@ -81,40 +78,47 @@ def juego_bola_rebotona(screen, clock):
         if b == 'MENU':
             return
 
-        # mover bola
+        # Mover bola
         x += vx; y += vy
-        # rebotes en paredes
-        if x - ball_r <= 0:
-            x, vx = ball_r, abs(vx)
-        elif x + ball_r >= SCREEN_WIDTH:
-            x, vx = SCREEN_WIDTH - ball_r, -abs(vx)
-        if y - ball_r <= 0:
-            y, vy = ball_r, abs(vy)
 
-        # colisión con pala o perder
+        # Rebote en paredes verticales
+        if x - ball_r <= 0:
+            x = ball_r
+            vx = abs(vx) * SPEEDUP
+            vy *= SPEEDUP
+        elif x + ball_r >= SCREEN_WIDTH:
+            x = SCREEN_WIDTH - ball_r
+            vx = -abs(vx) * SPEEDUP
+            vy *= SPEEDUP
+
+        # Rebote en techo
+        if y - ball_r <= 0:
+            y = ball_r
+            vy = abs(vy) * SPEEDUP
+            vx *= SPEEDUP
+
+        # Rebote con pala o perder
         if y + ball_r >= paddle_y:
             if paddle_x <= x <= paddle_x + paddle_w:
                 y = paddle_y - ball_r
-                vy = -abs(vy)
+                vy = -abs(vy) * SPEEDUP
+                vx *= SPEEDUP
                 bounce_count += 1
             else:
-                # actualizar highscore
                 if bounce_count > highs['bola_rebotona']:
                     highs['bola_rebotona'] = bounce_count
                     save_highscores()
                 return
 
-        # dibujar
+        # Dibujar
         screen.fill((0,0,0))
         pygame.draw.rect(screen, (200,200,200),
                          (paddle_x, paddle_y, paddle_w, paddle_h))
         pygame.draw.circle(screen, (255,255,255),
                            (int(x), int(y)), ball_r)
-        # mostrar puntaje actual y record
-        sc_txt = font.render(f"Puntaje: {bounce_count}", True, (255,255,255))
-        hs_txt = font.render(f"Mejor: {highs['bola_rebotona']}", True, (255,255,0))
-        screen.blit(sc_txt, (10, 10))
-        screen.blit(hs_txt, (10, 30))
+        # Mostrar puntaje y record
+        screen.blit(font.render(f"Puntaje: {bounce_count}", True, (255,255,255)), (10,10))
+        screen.blit(font.render(f"Mejor: {highs['bola_rebotona']}", True, (255,255,0)), (10,30))
         pygame.display.flip()
 
 def juego_reaction_timer(screen, clock):
@@ -126,85 +130,84 @@ def juego_reaction_timer(screen, clock):
         clock.tick(FPS)
         screen.fill((0,0,0))
         b = get_button()
+
         if state == 'WAIT_START':
-            txt = font.render("Press Z to start", True, (255,255,255))
-            screen.blit(txt, (80,140))
-            if b == 'A':  # Z
+            screen.blit(font.render("Press Z to start", True, (255,255,255)), (80,140))
+            if b == 'A':
                 wait_delay = random.uniform(1.0, 3.0)
                 start_time = time.time()
                 state = 'WAIT_GO'
+
         elif state == 'WAIT_GO':
             elapsed = time.time() - start_time
-            if elapsed < wait_delay:
-                txt = font.render("Get Ready...", True, (200,200,200))
-                screen.blit(txt, (120,140))
+            if b == 'A' and elapsed < wait_delay:
+                # penalización: tiempo alto fijo
+                reaction = 3000
+                state = 'SHOW_RESULT'
+            elif elapsed < wait_delay:
+                screen.blit(font.render("Get Ready...", True, (200,200,200)), (120,140))
             else:
-                txt = font.render("GO!", True, (0,255,0))
-                screen.blit(txt, (200,140))
+                screen.blit(font.render("GO!", True, (0,255,0)), (200,140))
                 if b == 'A':
                     reaction = (time.time() - (start_time + wait_delay)) * 1000
-                    # actualizar record
                     best = highs['reaction_timer']
                     if best is None or reaction < best:
                         highs['reaction_timer'] = reaction
                         save_highscores()
                     state = 'SHOW_RESULT'
+
         elif state == 'SHOW_RESULT':
-            # resultados y opciones
-            txt1 = font.render(f"Tu tiempo: {int(reaction)} ms", True, (255,255,0))
-            screen.blit(txt1, (50,120))
-            best = highs['reaction_timer']
-            txt2 = font.render(f"Mejor: {int(best)} ms", True, (255,200,200))
-            screen.blit(txt2, (50,180))
-            txt3 = font.render("Z=reintentar  X=salir", True, (255,255,255))
-            screen.blit(txt3, (60,240))
+            screen.blit(font.render(f"Tu tiempo: {int(reaction)} ms", True, (255,255,0)), (50,120))
+            best = highs['reaction_timer'] or 0
+            screen.blit(font.render(f"Mejor: {int(best)} ms", True, (255,200,200)), (50,180))
+            screen.blit(font.render("Z=reintentar  X=salir", True, (255,255,255)), (60,240))
             if b == 'A':
                 state = 'WAIT_START'
             elif b == 'MENU':
                 return
+
         pygame.display.flip()
 
 def juego_button_masher(screen, clock):
     font = pygame.font.Font(None, 48)
     state = 'WAIT_START'
-    count = start_time = 0
+    count = 0
+    start_time = 0
     DURATION = 5.0
 
     while True:
         clock.tick(FPS)
         screen.fill((0,0,0))
         b = get_button()
+
         if state == 'WAIT_START':
-            txt = font.render("Press Z to begin", True, (255,255,255))
-            screen.blit(txt, (100,140))
+            screen.blit(font.render("Press Z to begin", True, (255,255,255)), (100,140))
             if b == 'A':
                 count = 0
                 start_time = time.time()
                 state = 'MASH'
+
         elif state == 'MASH':
             elapsed = time.time() - start_time
             if elapsed < DURATION:
                 if b == 'A':
                     count += 1
-                txt1 = font.render(f"Count: {count}", True, (0,255,0))
-                screen.blit(txt1, (140,100))
-                txt2 = font.render(f"Time: {int(DURATION - elapsed)}", True, (255,255,0))
-                screen.blit(txt2, (160,180))
+                screen.blit(font.render(f"Count: {count}", True, (0,255,0)), (140,100))
+                screen.blit(font.render(f"Time: {int(DURATION - elapsed)}", True, (255,255,0)), (160,180))
             else:
-                # actualizar record
                 if count > highs['button_masher']:
                     highs['button_masher'] = count
                     save_highscores()
                 state = 'SHOW_RESULT'
+
         elif state == 'SHOW_RESULT':
-            txt1 = font.render(f"Mejor: {highs['button_masher']}", True, (255,200,200))
-            screen.blit(txt1, (120,120))
-            txt2 = font.render("Z=reintentar  X=salir", True, (255,255,255))
-            screen.blit(txt2, (100,180))
+            screen.blit(font.render(f"Mejor: {highs['button_masher']}", True, (255,200,200)), (120,120))
+            screen.blit(font.render("Z=reintentar  X=salir", True, (255,255,255)), (100,180))
             if b == 'A':
                 state = 'WAIT_START'
             elif b == 'MENU':
                 return
+
         pygame.display.flip()
 
 def main():
@@ -224,14 +227,10 @@ def main():
     while True:
         clock.tick(FPS)
         screen.fill((0,0,0))
-
-        # menú principal
         for idx, (label, _) in enumerate(juegos):
             color = (255,255,0) if idx == selected else (255,255,255)
-            surf = font.render(label, True, color)
-            screen.blit(surf, (50, 80 + idx*50))
-        txt = font.render("Z=Play  X=Salir", True, (200,200,200))
-        screen.blit(txt, (140, 260))
+            screen.blit(font.render(label, True, color), (50, 80 + idx*50))
+        screen.blit(font.render("Z=Play  X=Salir", True, (200,200,200)), (140, 260))
         pygame.display.flip()
 
         b = get_button()
