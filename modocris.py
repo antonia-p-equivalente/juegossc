@@ -31,9 +31,9 @@ if os.path.exists(HS_FILE):
         highs = json.load(f)
 else:
     highs = {
-        'bola_rebotona':     0,
-        'reaction_timer':   None,
-        'button_masher':     0
+        'bola_rebotona':   0,
+        'reaction_timer': None,
+        'button_masher':   0
     }
 
 def save_highscores():
@@ -41,10 +41,6 @@ def save_highscores():
         json.dump(highs, f)
 
 def get_button():
-    """
-    Retorna uno de: 'UP','DOWN','LEFT','RIGHT','A','MENU' o None,
-    ya sea de GPIO o de teclado (flechas + Z/X).
-    """
     gpio = leer_boton()
     if gpio:
         b = gpio.strip().upper()
@@ -128,7 +124,7 @@ def juego_reaction_timer(screen, clock):
         b = get_button()
 
         if state == 'WAIT_START':
-            screen.blit(font.render("Press Z to start", True, (255,255,255)), (80,140))
+            screen.blit(font.render("Presiona A para iniciar", True, (255,255,255)), (80,140))
             if b == 'A':
                 wait_delay = random.uniform(1.0, 3.0)
                 start_time = time.time()
@@ -164,7 +160,7 @@ def juego_reaction_timer(screen, clock):
             screen.blit(font.render(f"Tu tiempo: {int(reaction)} ms", True, (255,255,0)), (50,120))
             best = highs['reaction_timer'] or 0
             screen.blit(font.render(f"Mejor: {int(best)} ms", True, (255,200,200)), (50,180))
-            screen.blit(font.render("A: Reintentar   X: Salir", True, (255,255,255)), (80,240))
+            screen.blit(font.render("A: Reintentar", True, (255,255,255)), (80,240))
             if b == 'A':
                 state = 'WAIT_START'
             elif b == 'MENU':
@@ -185,7 +181,7 @@ def juego_button_masher(screen, clock):
         b = get_button()
 
         if state == 'WAIT_START':
-            screen.blit(font.render("Press Z to begin", True, (255,255,255)), (100,140))
+            screen.blit(font.render("Presiona A para iniciar", True, (255,255,255)), (100,140))
             if b == 'A':
                 count = 0
                 start_time = time.time()
@@ -206,7 +202,7 @@ def juego_button_masher(screen, clock):
 
         elif state == 'SHOW_RESULT':
             screen.blit(font.render(f"Mejor: {highs['button_masher']}", True, (255,200,200)), (120,120))
-            screen.blit(font.render("A: Reintentar   X: Salir", True, (255,255,255)), (100,180))
+            screen.blit(font.render("A: Reintentar", True, (255,255,255)), (100,180))
             if b == 'A':
                 state = 'WAIT_START'
             elif b == 'MENU':
@@ -260,12 +256,11 @@ def juego_snake(screen, clock):
             if (new_head[0] < 0 or new_head[0] >= GRID_WIDTH or
                 new_head[1] < 0 or new_head[1] >= GRID_HEIGHT or
                 new_head in snake):
-                # Game over
                 while True:
                     clock.tick(FPS)
                     screen.fill(BG_COLOR)
                     draw_text(screen, f"Game Over! Score: {score}", 36, 60, 120, TEXT_COLOR)
-                    draw_text(screen, "A=Reintentar   X=Menu", 24, 100, 180, TEXT_COLOR)
+                    draw_text(screen, "A:Reintentar", 24, 100, 180, TEXT_COLOR)
                     pygame.display.flip()
                     b2 = get_button()
                     if b2 == 'A':
@@ -300,6 +295,7 @@ def main():
     pygame.display.set_caption("PiGamer: Mini-Juegos")
     clock = pygame.time.Clock()
     font = pygame.font.Font(None, 36)
+    instr_font = pygame.font.Font(None, 20)  # font más pequeño para instrucciones
 
     juegos = [
         ("Bola Rebotona",    juego_bola_rebotona),
@@ -316,10 +312,10 @@ def main():
             color = (255,255,0) if idx == selected else (255,255,255)
             screen.blit(font.render(label, True, color), (50, 80 + idx*50))
 
-        # instrucciones
-        instr1 = font.render("A: Seleccionar", True, (200,200,200))
-        instr2 = font.render("X: Salir",        True, (200,200,200))
-        y_pos = SCREEN_HEIGHT - 40
+        # instrucciones abajo con tamaño reducido
+        instr1 = instr_font.render("A: Seleccionar", True, (200,200,200))
+        instr2 = instr_font.render("X: Salir",        True, (200,200,200))
+        y_pos = SCREEN_HEIGHT - 30
         x1 = SCREEN_WIDTH * 0.25 - instr1.get_width() / 2
         x2 = SCREEN_WIDTH * 0.75 - instr2.get_width() / 2
         screen.blit(instr1, (x1, y_pos))
@@ -342,3 +338,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
