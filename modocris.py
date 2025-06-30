@@ -3,60 +3,58 @@ import os
 import sys
 import subprocess
 import pygame
-from leerBoton import leer_boton
+from pygame.locals import K_UP, K_DOWN, K_z, K_x, KEYDOWN, QUIT
 
-# ——— Configuración de pantalla y FPS ———
+# — Configuración —
 SCREEN_WIDTH, SCREEN_HEIGHT = 480, 320
 FPS = 30
 
-def launch_game(script_path):
+def launch_game(script):
     """Lanza el script Python indicado y espera a que termine."""
-    subprocess.call([sys.executable, script_path])
+    subprocess.call([sys.executable, script])
 
 def main():
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Repositorio de Mini-Juegos")
     clock = pygame.time.Clock()
-    font = pygame.font.Font(None, 36)
+    font  = pygame.font.Font(None, 36)
 
-    # Directorio base (asume que este archivo está en la misma carpeta que los juegos)
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-
+    base = os.path.dirname(os.path.abspath(__file__))
     games = [
-        ("Bola Rebotona",    os.path.join(base_dir, "juego_bola_rebotona.py")),
-        ("Reaction Timer",   os.path.join(base_dir, "juego_reaction_timer.py")),
-        ("Button Masher",    os.path.join(base_dir, "juego_button_masher.py")),
+        ("Bola Rebotona",    os.path.join(base, "juego_bola_rebotona.py")),
+        ("Reaction Timer",   os.path.join(base, "juego_reaction_timer.py")),
+        ("Button Masher",    os.path.join(base, "juego_button_masher.py")),
     ]
 
-    current = 0
+    selected = 0
     running = True
 
     while running:
         clock.tick(FPS)
-
-        # Leer GPIO
-        btn = leer_boton()
-        if btn:
-            b = btn.strip().upper()
-            if b == 'DOWN':
-                current = (current + 1) % len(games)
-            elif b == 'UP':
-                current = (current - 1) % len(games)
-            elif b == 'A':
-                _, script = games[current]
-                launch_game(script)
-            elif b == 'MENU':
-                running = False
+        screen.fill((0, 0, 0))
 
         # Dibujar menú
-        screen.fill((0, 0, 0))
         for idx, (label, _) in enumerate(games):
-            color = (255, 255, 0) if idx == current else (255, 255, 255)
-            text_surf = font.render(label, True, color)
-            screen.blit(text_surf, (50, 80 + idx * 50))
-
+            color = (255, 255, 0) if idx == selected else (255, 255, 255)
+            text = font.render(label, True, color)
+            screen.blit(text, (50, 80 + idx * 50))
         pygame.display.flip()
+
+        # Procesar eventos de teclado
+        for ev in pygame.event.get():
+            if ev.type == QUIT:
+                running = False
+            elif ev.type == KEYDOWN:
+                if ev.key == K_DOWN:
+                    selected = (selected + 1) % len(games)
+                elif ev.key == K_UP:
+                    selected = (selected - 1) % len(games)
+                elif ev.key == K_z:
+                    _, script = games[selected]
+                    launch_game(script)
+                elif ev.key == K_x:
+                    running = False
 
     pygame.quit()
     sys.exit()
