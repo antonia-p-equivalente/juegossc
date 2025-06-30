@@ -59,12 +59,12 @@ def juego_bola_rebotona(screen, clock):
     vx, vy = 6.0, 4.0     # velocidad inicial duplicada
     SPEEDUP = 1.05
 
-    paddle_w, paddle_h, paddle_s = 80, 10, 5
+    paddle_w, paddle_h, paddle_s = 80, 10, 10  # velocidad de pala duplicada
     paddle_x = (SCREEN_WIDTH - paddle_w) / 2
     paddle_y = SCREEN_HEIGHT - paddle_h - 10
 
     bounce_count = 0
-    font = pygame.font.Font(None, 24)
+    small_font = pygame.font.Font(None, 24)
 
     while True:
         clock.tick(FPS)
@@ -108,8 +108,8 @@ def juego_bola_rebotona(screen, clock):
         pygame.draw.circle(screen, (255,255,255),
                            (int(x), int(y)), ball_r)
         # Mostrar puntaje y record
-        screen.blit(font.render(f"Puntaje: {bounce_count}", True, (255,255,255)), (10,10))
-        screen.blit(font.render(f"Mejor: {highs['bola_rebotona']}", True, (255,255,0)), (10,30))
+        screen.blit(small_font.render(f"Puntaje: {bounce_count}", True, (255,255,255)), (10,10))
+        screen.blit(small_font.render(f"Mejor: {highs['bola_rebotona']}", True, (255,255,0)), (10,30))
         pygame.display.flip()
 
 def juego_reaction_timer(screen, clock):
@@ -146,8 +146,10 @@ def juego_reaction_timer(screen, clock):
                     state = 'SHOW_RESULT'
 
         elif state == 'PENALIZE':
-            msg = "Muy antes! Z=reintentar  X=salir"
-            screen.blit(font.render(msg, True, (255,0,0)), (40,140))
+            msg1 = "¡Demasiado pronto!"
+            msg2 = "Z=reintentar   X=salir"
+            screen.blit(font.render(msg1, True, (255,50,50)), (100,120))
+            screen.blit(font.render(msg2, True, (255,255,255)), (80,180))
             if b == 'A':
                 state = 'WAIT_START'
             elif b == 'MENU':
@@ -157,7 +159,7 @@ def juego_reaction_timer(screen, clock):
             screen.blit(font.render(f"Tu tiempo: {int(reaction)} ms", True, (255,255,0)), (50,120))
             best = highs['reaction_timer'] or 0
             screen.blit(font.render(f"Mejor: {int(best)} ms", True, (255,200,200)), (50,180))
-            screen.blit(font.render("Z=reintentar  X=salir", True, (255,255,255)), (60,240))
+            screen.blit(font.render("Z=reintentar   X=salir", True, (255,255,255)), (80,240))
             if b == 'A':
                 state = 'WAIT_START'
             elif b == 'MENU':
@@ -198,7 +200,7 @@ def juego_button_masher(screen, clock):
 
         elif state == 'SHOW_RESULT':
             screen.blit(font.render(f"Mejor: {highs['button_masher']}", True, (255,200,200)), (120,120))
-            screen.blit(font.render("Z=reintentar  X=salir", True, (255,255,255)), (100,180))
+            screen.blit(font.render("Z=reintentar   X=salir", True, (255,255,255)), (100,180))
             if b == 'A':
                 state = 'WAIT_START'
             elif b == 'MENU':
